@@ -67,6 +67,20 @@ curl 'http://<SERVICE_URL>/routes?src=13.388860,52.517037&dst=13.397634,52.52940
 
 ```
 
+# Testing
+```bash
+# This will test the sorting function
+$ go test . -v -race -run TestSorting
+
+# This is a single request test
+# NOTE: the service needs to be running on 127.0.0.1:80 for it to function
+$ go test . -v -race -run TestEndToEnd
+
+# This is a 10x concurrent request test
+# NOTE: the service needs to be running on 127.0.0.1:80 for it to function
+$ go test . -v -race -run TestEtoEConcurrent
+```
+
 
 # Notes
 This service is written in the way I would write it for my own production environment. Keeping in mind that before this service could be considered production ready it would need to be load tested.

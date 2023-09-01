@@ -77,7 +77,7 @@ func TestSorting(T *testing.T) {
 	}
 }
 
-func TestEndToEndConcurrent(T *testing.T) {
+func TestEtoEConcurrent(T *testing.T) {
 	for i := 0; i < 10; i++ {
 		go TestEndToEnd(T)
 	}
