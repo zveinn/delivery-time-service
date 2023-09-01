@@ -85,6 +85,9 @@ $ go test . -v -race -run TestEtoEConcurrent
 # Notes
 This service is written in the way I would write it for my own production environment. Keeping in mind that before this service could be considered production ready it would need to be load tested.
 
+# Coding Conventions
+Normally I do not follow any coding conventions to the letter. Mostly I just abstract things if functions become too big or if repeate the same code more then once. I am however familiar with a few coding conventions, `Clean Code` being one of them. When joining a team I simply follow whichever coding conventions are being used by that team.
+
 ### Git workflow
 I normally do not follow basic git workflow conventions when creating the first versions of small services like these.
 
