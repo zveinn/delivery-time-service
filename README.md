@@ -106,6 +106,17 @@ Since this is designed to be a high-volume proxy layer the implementation of con
 
 ### No rate-limiting to the 3rd party service
 I did not implement any rate-limiting for the API calls to the 3rd party service since this particular service is open-source and can be deployed on-premis. My assumption is that this service will be deployed on-premis which means the current rate-limiting mechanism used by the demo environment (http://router.project-osrm.org) will not be a factor.
+<br>
+<br>
+NOTE: There is a small if statement implemented in the Request.Process() method that checks for status code 429. 
+```golang
+if resp.StatusCode == 429 {
+	R.Err = errors.New("Service ratelimit reached")
+  return
+}
+```
+This response code might not be a part of the original open-source project but an artifact of the demo environment. If that is the case it can be removed.
+
 
 <br>
 <br>
