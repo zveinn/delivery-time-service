@@ -71,7 +71,9 @@ curl 'http://<SERVICE_URL>/routes?src=13.388860,52.517037&dst=13.397634,52.52940
 # Notes
 This service is written in the way I would write it for my own production environment. Keeping in mind that before this service could be considered production ready it would need to be load tested.
 
-## Notes on decision making 
+### Git workflow
+I normally do not follow basic git workflow conventions when creating the first versions of small services like these.
+
 ### Request Validation
 No validation is done to ensure that coordinate are actual valid cooridnates. For a high-volume proxy service like this one it's more benefitial to validate the coordinate inputs upstream.
 
