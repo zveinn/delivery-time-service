@@ -19,22 +19,28 @@ func TestSorting(T *testing.T) {
 			Distance:    float64(i),
 		})
 	}
+	routeList = append(routeList, &Route{
+		Destination: "13.428555,52.523219",
+		Duration:    101,
+		Distance:    20,
+	})
 
 	SortRequestData(routeList)
+
+	for i := range routeList {
+		logger.Info("SORT", "Dur", routeList[i].Duration, "Dist", routeList[i].Distance)
+	}
 
 	if routeList[0].Distance != 10 {
 		T.Fatal("Shortest distance was not 10")
 	}
 	if routeList[1].Distance != 11 {
-		T.Fatal("Shortest distance was not 11")
+		T.Fatal("Second shortest distance was not 11")
 	}
-	if routeList[len(routeList)-1].Distance != 100 {
-		T.Fatal("Shortest distance was not 11")
+	if routeList[len(routeList)-1].Distance != 20 {
+		T.Fatal("Longest distance was not 101")
 	}
 
-	for i := range routeList {
-		logger.Info("SORT", "Dur", routeList[i].Duration, "Dist", routeList[i].Distance)
-	}
 }
 
 func TestEtoEConcurrent(T *testing.T) {
