@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"io"
-	"log"
 	"net/http"
 	"testing"
 	"time"
@@ -70,9 +69,9 @@ func TestSorting(T *testing.T) {
 
 	for i := range requestList {
 		if requestList[i].Resp == nil || len(requestList[i].Resp.Routes) < 1 {
-			log.Println("Dst:", requestList[i].Dst, " - NO ROUTE")
+			logger.Info("SORT", "Dst:", requestList[i].Dst, " - NO ROUTE")
 		} else {
-			log.Println("Dst:", requestList[i].Dst, "Dur:", requestList[i].Resp.Routes[0].Duration, "Dist:", requestList[i].Resp.Routes[0].Distance)
+			logger.Info("SORT", "Dst", requestList[i].Dst, "Dur", requestList[i].Resp.Routes[0].Duration, "Dist", requestList[i].Resp.Routes[0].Distance)
 		}
 	}
 }
@@ -93,36 +92,36 @@ func TestEndToEnd(T *testing.T) {
 
 	req, err := http.NewRequest("GET", "http://127.0.0.1/routes?src=13.388860,52.517037&dst=13.397634,52.529407&dst=13.428555,52.523219", nil)
 	if err != nil {
-		log.Println(err)
+		logger.Info("Err", err)
 		return
 	}
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		log.Println(err)
+		logger.Info("Err", err)
 		return
 	}
 
 	APIResp := new(APIResponse)
 	out, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Println(err)
+		logger.Info("Err", err)
 		return
 	}
 
-	log.Println(string(out))
+	// logger.Info(string(out))
 
 	err = json.Unmarshal(out, APIResp)
 	if err != nil {
-		log.Println(err)
+		logger.Info("Err", err)
 		return
 	}
 
 	for i := range APIResp.Routes {
 		if APIResp.Routes[i].Error != "" {
-			log.Println(APIResp.Routes[i].Error)
+			logger.Info(APIResp.Routes[i].Error)
 		} else {
-			log.Println("Dst:", APIResp.Routes[i].Destination, "Dist:", APIResp.Routes[i].Distance, "Dur:", APIResp.Routes[i].Duration)
+			logger.Info("Dst:", APIResp.Routes[i].Destination, "Dist:", APIResp.Routes[i].Distance, "Dur:", APIResp.Routes[i].Duration)
 		}
 	}
 

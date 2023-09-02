@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"log"
 	"net/http"
 	"runtime/debug"
 	"sort"
@@ -74,20 +73,20 @@ func initAPI() {
 func StartAPI(ID int) {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Println("API server panic", r, string(debug.Stack()))
+			logger.Error("API server panic", "error", r, "stack", string(debug.Stack()))
 		}
 		RoutineMonior <- ID
 	}()
 
 	if err := E.Start(BIND_ADDRESS + ":" + BIND_PORT); err != nil && err != http.ErrServerClosed {
-		log.Println("Unable to start API", err)
+		logger.Error("Unable to start API", err)
 	}
 }
 
 func Routes(c echo.Context) error {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Println("/Routes Panic", r, string(debug.Stack()))
+			logger.Error("/Routes Panic", "error", r, "stack", string(debug.Stack()))
 		}
 
 	}()
@@ -109,7 +108,8 @@ func Routes(c echo.Context) error {
 	}
 
 	ctx := c.Request().Context()
-	resp, err := GetDurationForDestination(ctx, src[0], dsts)
+	ctx, cancel := context.WithCancel(ctx)
+	resp, err := GetDurationForDestination(ctx, cancel, src[0], dsts)
 	if err != nil {
 		return c.JSON(500, err)
 	}
@@ -117,9 +117,8 @@ func Routes(c echo.Context) error {
 	return c.JSON(200, resp)
 }
 
-func GetDurationForDestination(ctx context.Context, source string, destinations []string) (resp *APIResponse, err error) {
+func GetDurationForDestination(ctx context.Context, cancel context.CancelFunc, source string, destinations []string) (resp *APIResponse, err error) {
 
-	ctx, cancel := context.WithCancel(ctx)
 	requestList := make([]*Request, len(destinations))
 	requestIndex := 0
 	Timeout := time.After(time.Millisecond * time.Duration(API_REQUEST_TIMEOUT_MS))
@@ -202,6 +201,7 @@ func GenerateResponseRoutes(requestList []*Request) (routeList []*Route) {
 
 		if requestList[i].Err != nil {
 			errString = requestList[i].Err.Error()
+			logger.Error("Error from 3rd party service", "error", errString)
 		}
 
 		if requestList[i].Resp != nil && len(requestList[i].Resp.Routes) > 0 {

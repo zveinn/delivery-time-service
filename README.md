@@ -51,6 +51,7 @@ SERVICE_REQUEST_TIMEOUT_MS=10000
 API_SERVER_SHUTDOWN_GRACE_PREDOD_MS=1000
 ```
 # Calling the API
+## Request 
 ```bash
 curl 'http://<SERVICE_URL>/routes?src=13.388860,52.517037&dst=13.397634,52.529407&dst=13.428555,52.523219&dst=13.428555,52.523219'
 
@@ -64,8 +65,49 @@ curl 'http://<SERVICE_URL>/routes?src=13.388860,52.517037&dst=13.397634,52.52940
 #     -- Multiple dst parameters can be defined
 #     -- Example: dst=13.428555,52.523219
 # 
+```
+## Response
+```json
+{
+	"source": "13.388860,52.517037",
+	"routes": [{
+		"destination": "13.397634,52.529407",
+		"duration": 260.1,
+		"distance": 1886.3,
+		"statusCode": 200, // HTTP status code from the 3rd party service
+		"serviceCode": "Ok" // Internal code from the 3rd party service
+	}, {
+		"destination": "13.428555,52.523219",
+		"duration": 389.4,
+		"distance": 3804.3,
+		"statusCode": 200, // HTTP status code from the 3rd party service
+		"serviceCode": "Ok" // Internal code from the 3rd party service
+	}]
+}
+```
+## Error Response
+```json
+{
+	"source": "13.388860,52.517037",
+	"routes": [{
+		"destination": "13.397634,52.529407",
+		"duration": 0,
+		"distance": 0,
+		"error": "Service ratelimit reached", // Error message for none 200 status codes
+		"statusCode": 429,
+		"serviceCode": ""
+	}, {
+		"destination": "13.428555,52.523219",
+		"duration": 0,
+		"distance": 0,
+		"error": "Service ratelimit reached", // Error message for none 200 status codes
+		"statusCode": 429,
+		"serviceCode": ""
+	}]
+}
 
 ```
+
 
 # Testing
 ```bash
@@ -97,10 +139,6 @@ No validation is done to ensure that coordinate are actual valid cooridnates. Fo
 ### Simple string returns on 400 and 500 errors
 Since users are not interacting dirrectly with this service, a formatted error response for invalid input is not needed. The string error responses are mostly for developers which are developing against the service.
 
-### Simple log.Println()
-I did write this service originally using the new slog package which released in 1.21. However, using that package seems to break the inbuilt golang test suite on build. <br>
-Depending on the situation any other structured log package should be used if logs are to be fed to a central log-service such as the ELK stack.
-
 ### No rate-limiting on API requests
 Since this is designed to be a high-volume proxy layer the implementation of configurable timeouts is (in my experience) better than a ratelimit. If the service is being overloaded it should be scaled horizontally in order to handle the load.
 
@@ -125,7 +163,7 @@ This response code might not be a part of the original open-source project but a
 # The Routine Monitor Mechanism
 The routine monitor is designed to keep goroutines, which are not suppose to exit, running.  
 <br>
-The `RoutineMonitor` channel and the for loop inside the `main() `function create a circular flow of interger IDs. When a goroutine exits, it returns an ID to the `RoutineMonitor` channel, which is read by the for loop inside `main()`, which re-launches the appropriate goroutine.
+The `RoutineMonitor` channel and the for loop inside the `main()` function create a circular flow of interger IDs. When a goroutine exits, it returns an ID to the `RoutineMonitor` channel, which is read by the for loop inside `main()`, which re-launches the appropriate goroutine.
 
 
 <br>
@@ -157,8 +195,10 @@ type Request struct {
 }
 ```
 The `RequestSlice` holds a finite number of pointes to `Request`. This finite number controls how many concurrent requests we can have at any given moment. 
+
 <br>
 <br>
+
 Each call to the API `/routes` can contain multiple coordinate destinations. Each of these destianations is turned into a `Request` objects and placed in the `RequestQueue`. Once all coordinate destinations have been place in the `RequestQueue` the function waits for all `Request.Done` channels to return a `byte`.
 
 ```golang

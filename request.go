@@ -36,7 +36,7 @@ func (R *Request) Finished() {
 func (R *Request) Process(index int) {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Println("Panic while processing request", r, string(debug.Stack()))
+			log.Println("Panic while processing request", "error", r, "stack", string(debug.Stack()))
 		}
 
 		RequestSlice[index] = nil

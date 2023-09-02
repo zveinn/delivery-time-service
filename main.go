@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -13,6 +12,7 @@ import (
 
 	"github.com/joho/godotenv"
 	echo "github.com/labstack/echo/v4"
+	"golang.org/x/exp/slog"
 )
 
 var (
@@ -43,6 +43,7 @@ var (
 	E          = echo.New()
 	HTTPClient *http.Client
 	URL        = "http://router.project-osrm.org/route/v1/driving/"
+	logger     = slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
 	RequestSlice []*Request
 	RequestQueue chan *Request
@@ -54,7 +55,7 @@ func init() {
 
 	err := godotenv.Load(".env")
 	if err != nil {
-		log.Println("Unable to load .env file: ", err)
+		logger.Error("Unable to load .env file", err)
 		os.Exit(1)
 	}
 
@@ -66,7 +67,7 @@ func init() {
 	API_SERVER_SHUTDOWN_GRACE_PREDOD_MS, err = strconv.Atoi(os.Getenv("API_SERVER_SHUTDOWN_GRACE_PREDOD_MS"))
 
 	if err != nil {
-		log.Println("Invalid .env variables", err)
+		logger.Error("Invalid .env variables", err)
 		os.Exit(1)
 	}
 
@@ -103,7 +104,7 @@ func main() {
 			ctx, _ = context.WithDeadline(ctx, time.Now().Add(time.Millisecond*time.Duration(API_SERVER_SHUTDOWN_GRACE_PREDOD_MS)))
 
 			if err := E.Shutdown(ctx); err != nil {
-				log.Println("Error shutting down API", err)
+				logger.Error("Error shutting down API", "error", err)
 
 			}
 
@@ -113,6 +114,7 @@ func main() {
 
 		select {
 		case ID := <-RoutineMonior:
+			logger.Info("Routine Monitor", "Starting Routine with ID", ID)
 			if ID == 1 {
 				go StartAPI(ID)
 			} else if ID == 2 {
@@ -129,12 +131,13 @@ func main() {
 func ProcessRequestQueue(ID int) {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Println("Queue processor panic", r, string(debug.Stack()))
+			logger.Error("Queue processor panic", "error", r, "stack", string(debug.Stack()))
 		}
 		RoutineMonior <- ID
 	}()
 
 	for {
+
 		for i := range RequestSlice {
 			if RequestSlice[i] == nil {
 				RequestSlice[i] = <-RequestQueue
