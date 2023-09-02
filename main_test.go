@@ -10,69 +10,30 @@ import (
 
 func TestSorting(T *testing.T) {
 
-	requestList := make([]*Request, 0)
+	routeList := make([]*Route, 0)
 
-	R1 := new(Request)
-	R1.Dst = "13.428555,52.523219"
-	R1.Src = "13.388860,52.517037"
-	R1.Resp = new(DestinationServiceResponse)
-	R1.Resp.Routes = append(R1.Resp.Routes, &DestinationRoute{
-		Distance: 50,
-		Duration: 100,
-	})
-
-	R2 := new(Request)
-	R2.Dst = "13.428555,52.523219"
-	R2.Src = "13.388860,52.517037"
-	R2.Resp = new(DestinationServiceResponse)
-	R2.Resp.Routes = append(R2.Resp.Routes, &DestinationRoute{
-		Distance: 100,
-		Duration: 100,
-	})
-
-	R3 := new(Request)
-	R3.Dst = "13.428555,52.523219"
-	R3.Src = "13.388860,52.517037"
-	R3.Resp = new(DestinationServiceResponse)
-	R3.Resp.Routes = append(R3.Resp.Routes, &DestinationRoute{
-		Distance: 200,
-		Duration: 200,
-	})
-
-	R4 := new(Request)
-	R4.Dst = "13.428555,52.523219"
-	R4.Src = "13.388860,52.517037"
-	R4.Resp = new(DestinationServiceResponse)
-	R4.Resp.Routes = append(R4.Resp.Routes, &DestinationRoute{
-		Distance: 25,
-		Duration: 100,
-	})
-
-	R5 := new(Request)
-	R5.Dst = "13.428555,52.523219"
-	R5.Src = "13.388860,52.517037"
-	R5.Resp = new(DestinationServiceResponse)
-
-	requestList = append(requestList, R1, R2, R3, R4, R5)
-
-	SortRequestData(requestList)
-
-	if requestList[0].Resp.Routes[0].Distance != 25 {
-		T.Fatal("Shortest distance should have been 25 but is", requestList[0].Resp.Routes[0].Distance)
-	}
-	if requestList[1].Resp.Routes[0].Distance != 50 {
-		T.Fatal("Shortest distance should have been 50 but is", requestList[1].Resp.Routes[0].Distance)
-	}
-	if requestList[2].Resp.Routes[0].Distance != 100 {
-		T.Fatal("Shortest distance should have been 100 but is", requestList[2].Resp.Routes[0].Distance)
+	for i := 10; i <= 100; i++ {
+		routeList = append(routeList, &Route{
+			Destination: "13.428555,52.523219",
+			Duration:    100,
+			Distance:    float64(i),
+		})
 	}
 
-	for i := range requestList {
-		if requestList[i].Resp == nil || len(requestList[i].Resp.Routes) < 1 {
-			logger.Info("SORT", "Dst:", requestList[i].Dst, " - NO ROUTE")
-		} else {
-			logger.Info("SORT", "Dst", requestList[i].Dst, "Dur", requestList[i].Resp.Routes[0].Duration, "Dist", requestList[i].Resp.Routes[0].Distance)
-		}
+	SortRequestData(routeList)
+
+	if routeList[0].Distance != 10 {
+		T.Fatal("Shortest distance was not 10")
+	}
+	if routeList[1].Distance != 11 {
+		T.Fatal("Shortest distance was not 11")
+	}
+	if routeList[len(routeList)-1].Distance != 100 {
+		T.Fatal("Shortest distance was not 11")
+	}
+
+	for i := range routeList {
+		logger.Info("SORT", "Dur", routeList[i].Duration, "Dist", routeList[i].Distance)
 	}
 }
 

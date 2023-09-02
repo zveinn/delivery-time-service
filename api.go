@@ -150,35 +150,28 @@ func GetDurationForDestination(ctx context.Context, cancel context.CancelFunc, s
 		}
 	}
 
-	SortRequestData(requestList)
-
 	resp = new(APIResponse)
 	resp.Source = source
 	resp.Routes = GenerateResponseRoutes(requestList)
 
+	SortRequestData(resp.Routes)
+
 	return resp, nil
 }
 
-func SortRequestData(requestList []*Request) {
+func SortRequestData(routeList []*Route) {
 
 	// Since go 1.18 sort.Slice has been replaced with a more
 	// efficient algorithm which is used by sort.SliceStable
-	sort.SliceStable(requestList, func(a, b int) bool {
-
-		if requestList[a].Resp == nil || len(requestList[a].Resp.Routes) < 1 {
-			return false
-		}
-		if requestList[b].Resp == nil || len(requestList[b].Resp.Routes) < 1 {
-			return false
-		}
+	sort.SliceStable(routeList, func(a, b int) bool {
 
 		// First we compare durations
-		if requestList[a].Resp.Routes[0].Duration < requestList[b].Resp.Routes[0].Duration {
+		if routeList[a].Duration < routeList[b].Duration {
 			return true
 
-		} else if requestList[a].Resp.Routes[0].Duration == requestList[b].Resp.Routes[0].Duration {
+		} else if routeList[a].Duration == routeList[b].Duration {
 			// If durations are equal we compare distances
-			if requestList[a].Resp.Routes[0].Distance < requestList[b].Resp.Routes[0].Distance {
+			if routeList[a].Distance < routeList[b].Distance {
 				return true
 			}
 
