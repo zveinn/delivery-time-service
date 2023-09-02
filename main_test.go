@@ -119,9 +119,9 @@ func TestEndToEnd(T *testing.T) {
 
 	for i := range APIResp.Routes {
 		if APIResp.Routes[i].Error != "" {
-			logger.Info(APIResp.Routes[i].Error)
+			logger.Error(APIResp.Routes[i].Error)
 		} else {
-			logger.Info("Dst:", APIResp.Routes[i].Destination, "Dist:", APIResp.Routes[i].Distance, "Dur:", APIResp.Routes[i].Duration)
+			logger.Info("Resp", "Dst:", APIResp.Routes[i].Destination, "Dist:", APIResp.Routes[i].Distance, "Dur:", APIResp.Routes[i].Duration)
 		}
 	}
 
